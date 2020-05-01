@@ -1,11 +1,32 @@
 var serviceAccount = require("./permissions.json");
 
 const admin = require('firebase-admin');
-
+const firebase = require('firebase/app');
+const functions = require('firebase-functions');
+require('firebase/auth');
+require('firebase/firestore');
+var firebaseConfig = {
+  apiKey: apiKey,
+  authDomain: "cruzhacks-application.firebaseapp.com",
+  databaseURL: "https://cruzhacks-application.firebaseio.com",
+  projectId: "cruzhacks-application",
+  storageBucket: "cruzhacks-application.appspot.com",
+  messagingSenderId: "942888289964",
+  appId: "1:942888289964:web:fe979f9fe1a6a754e2c109",
+  measurementId: "G-ZXYBVNM2XM"
+};
+firebase.initializeApp(firebaseConfig);
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://cruzhacks-application.firebaseio.com"
 });
+
+/*
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://cruzhacks-application.firebaseio.com",
+  databaseAuthVariableOverride: null
+});
+const fs = require('fs');
 const db = admin.firestore();
 const functions = require('firebase-functions');
 const express = require('express');
@@ -13,7 +34,7 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors({ origin: true }));
-
+*/
 function hackerObj(hacker){
   var hackerData = { 
     demographics: hacker.demographics,
@@ -100,71 +121,105 @@ function validateHackerLogistics(logistics){
 exports.createHacker = functions.https.onRequest( 
 
   (req, res) => {
-    (async () => {
-      try {
-          if(!validateHackerDemographics(req.body['hacker']['demographics']) ||
-             !validateHackerExperiences(req.body['hacker']['experiences']) ||
-             !validateHackerLogistics(req.body['hacker']['logistics'])){
-               return res.status(403).send('invalid fields');
-          }
-          var hackerRef = db.collection('hackers');
-          let dict = req.body['hacker']['demographics'];
-          var check = false;
-          await hackerRef.get().then(querySnapshot => {
-            if(querySnapshot.size > 0){
-              check = true;
+
+    const firebaseAuth = admin.auth().createCustomToken(req.headers.token).then(token => {
+      // Sign in the Client SDK as 'my-worker'
+      return firebase.auth().signInWithCustomToken(token).then(user => {
+        user.uuid = req.headers.token;
+        return firebase.firestore();
+      });
+    });
+    return firebaseAuth.then( db => {
+      (async () => {
+      
+        try {
+            if(!validateHackerDemographics(req.body['hacker']['demographics']) ||
+               !validateHackerExperiences(req.body['hacker']['experiences']) ||
+               !validateHackerLogistics(req.body['hacker']['logistics'])){
+                 return res.status(403).send('invalid fields');
             }
-          });
-          if (check){
-            let query = hackerRef.where('demographics.last-name', '==',dict['last-name']).
-            where('demographics.first-name', '==', dict['first-name']).
-            where('demographics.email', '==', dict['email']);
-            await query.get().then(querySnapshot => {
-              if (querySnapshot.size > 0){
-                return res.status(403).send('User already exists');
+            var hackerRef = db.collection('hackers');
+            let dict = req.body['hacker']['demographics'];
+            var check = false;
+            await hackerRef.get().then(querySnapshot => {
+              if(querySnapshot.size > 0){
+                check = true;
               }
             });
-          } else {
-            await db.collection('hackers').add(hackerObj(req.body.hacker));
-            return res.status(200).send('Created hacker');
-          }
-         
-        
-      } catch (error){
-        return res.status(500).send(error);
-      }
-    })();
+            if (check){
+              let query = hackerRef.where('demographics.last-name', '==',dict['last-name']).
+              where('demographics.first-name', '==', dict['first-name']).
+              where('demographics.email', '==', dict['email']);
+              await query.get().then(querySnapshot => {
+                if (querySnapshot.size > 0){
+                  return res.status(403).send('User already exists');
+                }
+              });
+            } else {
+              await db.collection('hackers').add(hackerObj(req.body.hacker));
+              return res.status(200).send('Created hacker');
+            }
+           
+          
+        } catch (error){
+          return res.status(500).send(error);
+        }
+      })();
+    });
+   
   }
 );
 
 exports.getHacker = functions.https.onRequest(
   (req, res) => {
-  (async () => {
-    try {
-      let dict = req.body;
-      let response = []
-      var hackerRef = db.collection('hackers');
-      let query = hackerRef.where('demographics.last-name', '==',dict['last-name']).
-      where('demographics.first-name', '==', dict['first-name']).
-      where('demographics.email', '==', dict['email']);
-      await query;
 
-      await query.get().then(querySnapshot => {
-        querySnapshot.forEach(function(doc) {
-          response.push(doc.data());
+  const firebaseAuth = admin.auth().createCustomToken(req.headers.token).then(token => {
+    // Sign in the Client SDK as 'my-worker'
+    return firebase.auth().signInWithCustomToken(token).then(user => {
+      user.uuid = req.headers.token;
+      return firebase.firestore();
+    });
+  });
+  return firebaseAuth.then(db => {
+    (async () => {
+      try {
+        let dict = req.body;
+        let response = []
+        var hackerRef = db.collection('hackers');
+        let query = hackerRef.where('demographics.last-name', '==',dict['last-name']).
+        where('demographics.first-name', '==', dict['first-name']).
+        where('demographics.email', '==', dict['email']);
+        await query;
+        await query.get().then(querySnapshot => {
+          querySnapshot.forEach(function(doc) {
+            response.push(doc.data());
+          });
+          console.log("boutta send response");
+          return res.status(200).send(response[0]);
         });
-        return res.status(200).send(response[0]);
-      });
-     
-    } catch (error){
-      return res.status(500).send(error);
-    }
-  })();
+       
+      } catch (error){
+        return res.status(500).send(error);
+      }
+    })();
+  })
+  
 }
 );
 
 exports.updateHackerDemographics = functions.https.onRequest(
   (req, res) => {
+
+    const firebaseAuth = admin.auth().createCustomToken(req.headers.token).then(token => {
+      // Sign in the Client SDK as 'my-worker'
+      return firebase.auth().signInWithCustomToken(token).then(user => {
+        user.uuid = req.headers.token;
+        return firebase.firestore();
+      });
+    });
+    return firebaseAuth.then(db => {
+
+  
     (async () => {
       try {
         let dict = req.body;
@@ -198,11 +253,21 @@ exports.updateHackerDemographics = functions.https.onRequest(
       }
   
     })();
+  });
   }
 );
 
 exports.updateHackerExperiences = functions.https.onRequest(
   (req, res) => {
+
+    const firebaseAuth = admin.auth().createCustomToken(req.headers.token).then(token => {
+      // Sign in the Client SDK as 'my-worker'
+      return firebase.auth().signInWithCustomToken(token).then(user => {
+        user.uuid = req.headers.token;
+        return firebase.firestore();
+      });
+    });
+    return firebaseAuth.then(db => {
     (async () => {
       try {
         let dict = req.body;
@@ -236,11 +301,23 @@ exports.updateHackerExperiences = functions.https.onRequest(
       }
   
     })();
+  });
   }
 );
 
 exports.updateHackerLogistics = functions.https.onRequest(
   (req, res) => {
+
+    const firebaseAuth = admin.auth().createCustomToken(req.headers.token).then(token => {
+      // Sign in the Client SDK as 'my-worker'
+      return firebase.auth().signInWithCustomToken(token).then(user => {
+        user.uuid = req.headers.token;
+        return firebase.firestore();
+      });
+    });
+    return firebaseAuth.then(db => {
+
+    
     (async () => {
       try {
         let dict = req.body;
@@ -274,11 +351,21 @@ exports.updateHackerLogistics = functions.https.onRequest(
       }
   
     })();
+  });
   }
 );
 
 exports.updateHackerSubmitted = functions.https.onRequest(
   (req, res) => {
+
+    const firebaseAuth = admin.auth().createCustomToken(req.headers.token).then(token => {
+      // Sign in the Client SDK as 'my-worker'
+      return firebase.auth().signInWithCustomToken(token).then(user => {
+        user.uuid = req.headers.token;
+        return firebase.firestore();
+      });
+    });
+    return firebaseAuth.then(db => {
     (async () => {
       try {
         let dict = req.body;
@@ -307,12 +394,21 @@ exports.updateHackerSubmitted = functions.https.onRequest(
       }
   
     })();
+  })
   }
 );
 
 exports.updateHacker = functions.https.onRequest(
   (req, res) => {
 
+    const firebaseAuth = admin.auth().createCustomToken(req.headers.token).then(token => {
+      // Sign in the Client SDK as 'my-worker'
+      return firebase.auth().signInWithCustomToken(token).then(user => {
+        user.uuid = req.headers.token;
+        return firebase.firestore();
+      });
+    });
+    return firebaseAuth.then(db => {
     (async() => {
       try {
         let dict = req.body;
@@ -348,14 +444,24 @@ exports.updateHacker = functions.https.onRequest(
         return res.status(500).send(error);
       }
     })();
-  
+  });
   }
 );
 
 // Update Full Hacker Profile given demographics, experiences, and logistics
 exports.deleteHacker = functions.https.onRequest(
   (req, res) => {
+
+  const firebaseAuth = admin.auth().createCustomToken(req.headers.token).then(token => {
+    // Sign in the Client SDK as 'my-worker'
+    return firebase.auth().signInWithCustomToken(token).then(user => {
+      user.uuid = req.headers.token;
+      return firebase.firestore();
+    });
+  });
+  return firebaseAuth.then(db => {
   (async () => {
+    
     try {
       let dict = req.body;
       let response = []
@@ -385,6 +491,7 @@ exports.deleteHacker = functions.https.onRequest(
       return res.status(500).send(error);
     } 
   })();
+});
 }
 );
 

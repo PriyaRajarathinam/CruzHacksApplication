@@ -49,6 +49,9 @@ it('createHacker: should return 200', function(done) {
                     "essay": "Hi, I'm excited about cruz hacks!"
                 }
             }
+        },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
         }
     
     };
@@ -83,7 +86,10 @@ it('getHacker: should return 200', function(done) {
                 "last-name": "Rajarathinam",
                 "email": "prajarat@ucsc.edu"
             },
-        
+        headers:{
+            "token": "A89asbsadf88AS*9f"
+        }
+    
 
     };
     var statusCode = 0;
@@ -142,6 +148,9 @@ it('updateHacker: should return 200', function(done) {
                         "UCSC": true,
                         "affiliation": "9/10"
                  },
+            },
+            headers:{
+                "token": "A89asbsadf88AS*9f"
             }
         };
         var statusCode = 0;
@@ -176,6 +185,9 @@ it('getHacker: should return 200 and accomadation I need food!', function (done)
                 "last-name": "Rajarathinam",
                 "email": "prajarat@ucsc.edu"
             },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
+        }
         
 
     };
@@ -234,6 +246,9 @@ it('updateHackerDemographics: should return 200', function(done){
                     },
                     "submitted": false
                 }
+            },
+            headers:{
+                "token": "A89asbsadf88AS*9f"
             }
     }
     var statusCode = 0;
@@ -285,8 +300,11 @@ it('updateHackerDemographics: should return 403', function(done){
                     },
                     "submitted": false
                 }
+            },
+            headers:{
+                "token": "A89asbsadf88AS*9f"
             }
-    }
+    };
     var statusCode = 0;
     var res = {
         send: function(info){
@@ -331,7 +349,10 @@ it('updateHackerExperiences: should return 200', function(done){
                    },
                    "submitted": false
                }
-           }
+           },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
+        }
     }
     var statusCode = 0;
     var res = {
@@ -379,7 +400,10 @@ it('updateHackerExperiences: should return 403 invalid fields', function(done){
                    },
                    "submitted": false
                }
-           }
+           },
+           headers:{
+            "token": "A89asbsadf88AS*9f"
+        }
     }
     var statusCode = 0;
     var res = {
@@ -422,13 +446,17 @@ it('updateHackerLogistics: should return 200', function(done){
                 "logistics": {
                     "help": false,
                     "accomodations": "I've updated logistics!"
-                },
-            }
+                }
+            },
+        },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
         }
     }
     var statusCode = 0;
     var res = {
         send: function(info){
+            console.log("finished");
             try { 
                 assert.equal(info, 'Update logistics successful');
                 assert.equal(statusCode, 200);
@@ -470,6 +498,9 @@ it('updateHackerLogistics: should return 403 invalid fields', function(done){
                     "accomodations": "djfjskfjkjljljkljkljljkdjljkfjklsjkjdjfjsldjklsjflkdjlfjsljfdfsfsffsfsfsfsfsffddjfjskfjkjljljkljkljljkdjljkfjklsjkjdjfjsldjklsjflkdjlfjsljfdfsfsffsfsfsfsfsffd"
                 },
             }
+        },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
         }
     }
     var statusCode = 0;
@@ -504,6 +535,9 @@ it('getHacker: should get updated fields and return 200', function (done){
                 "last-name": "Rajarathinam",
                 "email": "prajarat@ucsc.edu"
             },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
+        }
         
 
     };
@@ -546,6 +580,9 @@ it('updateHackerSubmitted: should return 200', function(done){
                     "affiliation": "9/10"
                 }
             }
+        },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
         }
     }
     var statusCode = 0;
@@ -590,6 +627,9 @@ it('updateHackerLogistics: should return 403 cannot update after submission', fu
                     "accomodations": "I've updated logistics!"
                 },
             }
+        },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
         }
     }
     var statusCode = 0;
@@ -638,6 +678,9 @@ it('createHacker: should return 403 invalid fields', function(done) {
                     "essay": "Hi, I'm excited about cruz hacks!"
                 }
             }
+        },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
         }
     
     };
@@ -688,6 +731,9 @@ it('createHacker: should return 403 user already exists', function(done) {
                     "essay": "Hi, I'm excited about cruz hacks!"
                 }
             }
+        },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
         }
     
     };
@@ -724,6 +770,9 @@ it('deleteHacker: should return 200 with correct body', function(done) {
             "first-name": "Priya",
             "last-name": "Rajarathinam",
             "email": "prajarat@ucsc.edu"
+        },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
         }
     };
     var statusCode = 0;
@@ -761,6 +810,9 @@ it('deleteHacker: should return 404', function(done) {
             "first-name": "Priya",
             "last-name": "Rajarathinam",
             "email": "prajarat@ucsc.edu"
+        },
+        headers:{
+            "token": "A89asbsadf88AS*9f"
         }
     };
     var statusCode = 0;
